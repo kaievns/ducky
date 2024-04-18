@@ -1,5 +1,4 @@
 import duckdb
-from threading import Thread
 
 
 class Adapter:
