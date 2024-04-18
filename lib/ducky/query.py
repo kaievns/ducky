@@ -8,13 +8,14 @@ class Query(Generic[T]):
     adapter: Adapter
     fields = "*"
     source = "none"
-    conditions: list[(str, tuple[any])] = []
+    conditions: list[(str, tuple[any])]
     sort = None
     size = None
 
     def __init__(self, adapter: Adapter, converter: callable) -> None:
         self.adapter = adapter
         self.converter = converter
+        self.conditions = []
 
     def select(self, fields: str):
         self.fields = fields
@@ -52,7 +53,7 @@ class Query(Generic[T]):
             query += f" ORDER BY {self.sort}"
 
         if self.size != None:
-            query += f" LIMIT {self.limit}"
+            query += f" LIMIT {self.size}"
 
         result = self.adapter.read(query, params)
 
