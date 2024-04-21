@@ -1,4 +1,5 @@
 from typing import Generic, TypeVar
+from .migration import Migration
 from .adapter import Adapter
 from .query import Query
 
@@ -8,8 +9,8 @@ T = TypeVar("T")
 
 class Repository(Generic[T]):
     def __init__(self) -> None:
+        Migration.run(self.table_query)
         self.adapter = Adapter()
-        self.adapter.write(self.table_query, None)
 
     table_query: str
     insert_query: str
