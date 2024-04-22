@@ -20,7 +20,9 @@ class Adapter:
     def write(self, query: str, data: list | tuple | dict):
         with closing(self.connection.cursor()) as db:
             db.execute(query, data)
+            db.commit()
 
     def dump(self, query: str, data: list[dict]):
         with closing(self.connection.cursor()) as db:
             db.executemany(query, data)
+            db.commit()
