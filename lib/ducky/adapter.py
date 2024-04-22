@@ -1,28 +1,26 @@
 import duckdb
+from contextlib import closing
 
 
 class Adapter:
     connection: duckdb.DuckDBPyConnection
 
-    @staticmethod
-    def connect(db_name: str):
-        Adapter.connection = duckdb.connect(db_name)
+    @classmethod
+    def connect(cls, db_name: str):
+        cls.connection = duckdb.connect(db_name)
 
-        return Adapter.connection
+        return cls.connection
 
     def read(self, query: str, params: list | tuple | dict) -> list[any]:
-        db = self.connection.cursor()
-        result = db.execute(query, params).fetchall()
-        db.close()
+        with closing(self.connection.cursor()) as db:
+            result = db.execute(query, params).fetchall()
 
         return result
 
     def write(self, query: str, data: list | tuple | dict):
-        db = self.connection.cursor()
-        db.execute(query, data)
-        db.close()
+        with closing(self.connection.cursor()) as db:
+            db.execute(query, data)
 
     def dump(self, query: str, data: list[dict]):
-        db = self.connection.cursor()
-        db.executemany(query, data)
-        db.close()
+        with closing(self.connection.cursor()) as db:
+            db.executemany(query, data)
