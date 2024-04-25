@@ -5,11 +5,11 @@ from contextlib import closing
 class Adapter:
     connection: duckdb.DuckDBPyConnection
 
-    @classmethod
-    def connect(cls, db_name: str):
-        cls.connection = duckdb.connect(db_name)
+    @staticmethod
+    def connect(db_name: str):
+        Adapter.connection = duckdb.connect(db_name)
 
-        return cls.connection
+        return Adapter.connection
 
     def read(self, query: str, params: list | tuple | dict) -> list[any]:
         with closing(self.connection.cursor()) as db:
