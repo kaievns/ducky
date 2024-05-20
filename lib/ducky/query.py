@@ -18,26 +18,26 @@ class Query(Generic[T]):
         self.conditions = []
 
     def select(self, fields: str):
-        self.fields = fields
-        return self
+        return self.clone(fields=fields)
 
     def table(self, name: str):
-        self.source = name
-        return self
+        return self.clone(source=name)
 
     def where(self, token: str, *args):
-        self.conditions.append((token, args))
-        return self
+        conditions = self.conditions.copy()
+        conditions.append((token, args))
+        return self.clone(conditions=conditions)
 
     def limit(self, size: int):
-        self.size = size
-        return self
+        return self.clone(size=size)
 
     def order(self, name: str):
-        self.sort = name
-        return self
+        return self.clone(sort=name)
 
     def fetch(self) -> list[T]:
+        return [self.converter(r) for r in self.result()]
+
+    def result(self) -> list[tuple]:
         query = f"SELECT {self.fields} FROM {self.source}"
 
         params = []
@@ -55,6 +55,17 @@ class Query(Generic[T]):
         if self.size != None:
             query += f" LIMIT {self.size}"
 
-        result = self.adapter.read(query, params)
+        return self.adapter.read(query, params)
 
-        return [self.converter(r) for r in result]
+    def clone(self, **kwargs):
+        query = Query(self.adapter, self.converter)
+        query.fields = self.fields
+        query.source = self.source
+        query.conditions = self.conditions
+        query.sort = self.sort
+        query.size = self.size
+
+        for key in kwargs:
+            setattr(query, key, kwargs[key])
+
+        return query
