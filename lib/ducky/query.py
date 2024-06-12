@@ -9,6 +9,7 @@ class Query(Generic[T]):
     fields = "*"
     source = "none"
     conditions: list[(str, tuple[any])]
+    group = None
     sort = None
     size = None
 
@@ -34,6 +35,9 @@ class Query(Generic[T]):
     def order(self, name: str):
         return self.clone(sort=name)
 
+    def group_by(self, name: str):
+        return self.clone(group=name)
+
     def fetch(self) -> list[T]:
         return [self.converter(r) for r in self.result()]
 
@@ -49,6 +53,9 @@ class Query(Generic[T]):
         if len(wheres) > 0:
             query += " WHERE " + " AND ".join(wheres)
 
+        if self.group != None:
+            query += f" GROUP BY {self.group}"
+
         if self.sort != None:
             query += f" ORDER BY {self.sort}"
 
@@ -62,6 +69,7 @@ class Query(Generic[T]):
         query.fields = self.fields
         query.source = self.source
         query.conditions = self.conditions
+        query.group = self.group
         query.sort = self.sort
         query.size = self.size
 
