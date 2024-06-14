@@ -2,6 +2,12 @@ import duckdb
 from contextlib import closing
 
 
+def batch(iterable, size=1):
+    l = len(iterable)
+    for ndx in range(0, l, size):
+        yield iterable[ndx:min(ndx + size, l)]
+
+
 class Adapter:
     connection: duckdb.DuckDBPyConnection
 
@@ -24,5 +30,6 @@ class Adapter:
 
     def dump(self, query: str, data: list[dict]):
         with closing(self.connection.cursor()) as db:
-            db.executemany(query, data)
-            db.commit()
+            for chunk in batch(data, 100):
+                db.executemany(query, chunk)
+                db.commit()
